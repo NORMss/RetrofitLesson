@@ -2,10 +2,10 @@ package com.norm.myretrofitlesson
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Button
-import android.widget.NumberPicker
-import android.widget.TextView
-import com.norm.myretrofitlesson.retrofit.ProductAPI
+import com.norm.myretrofitlesson.databinding.ActivityMainBinding
+import com.norm.myretrofitlesson.retrofit.AuthRequest
+import com.norm.myretrofitlesson.retrofit.MainAPI
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -15,12 +15,13 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val tv = findViewById<TextView>(R.id.title)
-        val b = findViewById<Button>(R.id.btn_get)
 
         val interceptor = HttpLoggingInterceptor()
         interceptor.level = HttpLoggingInterceptor.Level.BODY
@@ -29,29 +30,26 @@ class MainActivity : AppCompatActivity() {
             .addInterceptor(interceptor)
             .build()
 
-        val numberPicker = findViewById<NumberPicker>(R.id.numberPicker)
-
-        numberPicker.minValue = 1
-        numberPicker.maxValue = 10
-        numberPicker.wrapSelectorWheel = false
-
-        var selectId = numberPicker.minValue
-
-        numberPicker.setOnValueChangedListener { picker, oldVal, newVal ->
-            selectId = newVal
-        }
-
         val retrofit = Retrofit
             .Builder()
             .baseUrl("https://dummyjson.com").client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-        val productAPI = retrofit.create(ProductAPI::class.java)
-        b.setOnClickListener {
+        val mainAPI = retrofit.create(MainAPI::class.java)
+        binding.btnSingin.setOnClickListener {
             CoroutineScope(Dispatchers.IO).launch {
-                val product = productAPI.getProducts(selectId)
+                val user = mainAPI.auth(
+                    AuthRequest(
+                        binding.username.text.toString(),
+                        binding.password.text.toString(),
+                    )
+                )
                 runOnUiThread {
-                    tv.text = product.title
+                    binding.apply {
+                        Picasso.get().load(user.image).into(iv)
+                        firstName.text = user.firstName
+                        lastName.text = user.lastName
+                    }
                 }
             }
         }
