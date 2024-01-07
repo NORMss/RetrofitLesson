@@ -1,6 +1,7 @@
 package com.norm.myretrofitlesson
 
 import android.os.Bundle
+import android.widget.SearchView.OnQueryTextListener
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.norm.myretrofitlesson.adapter.ProductAdapter
@@ -41,13 +42,22 @@ class MainActivity : AppCompatActivity() {
             .build()
         val mainAPI = retrofit.create(MainAPI::class.java)
 
-        CoroutineScope(Dispatchers.IO).launch {
-            val list = mainAPI.getAllProducts()
-            runOnUiThread {
-                binding.apply {
-                    adapter.submitList(list.products)
-                }
+        binding.sv.setOnQueryTextListener(object : OnQueryTextListener {
+            override fun onQueryTextSubmit(p0: String?): Boolean {
+                return true
             }
-        }
+
+            override fun onQueryTextChange(text: String?): Boolean {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val list = text?.let { mainAPI.getProductsByName(it) }
+                    runOnUiThread {
+                        binding.apply {
+                            adapter.submitList(list?.products)
+                        }
+                    }
+                }
+                return true
+            }
+        })
     }
 }
