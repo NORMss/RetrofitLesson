@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.norm.myretrofitlesson.adapter.ProductAdapter
 import com.norm.myretrofitlesson.databinding.ActivityMainBinding
-import com.norm.myretrofitlesson.retrofit.AuthRequest
 import com.norm.myretrofitlesson.retrofit.MainAPI
 import com.norm.myretrofitlesson.retrofit.User
 import kotlinx.coroutines.CoroutineScope
@@ -42,17 +41,6 @@ class MainActivity : AppCompatActivity() {
         val mainAPI = retrofit.create(MainAPI::class.java)
 
         var user: User? = null
-
-        CoroutineScope(Dispatchers.IO).launch {
-            user = mainAPI.auth(
-                AuthRequest(
-                    username = "kmeus4", password = "aUTdmmmbH"
-                )
-            )
-            runOnUiThread {
-                supportActionBar?.title = user?.firstName
-            }
-        }
 
         binding.sv.setOnQueryTextListener(object : OnQueryTextListener {
             override fun onQueryTextSubmit(p0: String?): Boolean {
